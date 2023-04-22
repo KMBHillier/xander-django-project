@@ -57,7 +57,7 @@ class Recipe(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='user_recipes'
+        related_name='recipes_by_user'
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
