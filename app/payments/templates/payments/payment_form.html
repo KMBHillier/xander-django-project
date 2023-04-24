@@ -12,6 +12,7 @@
         {{ form }}
         <div id="card-element"></div>
         <button type="submit" id="submit-button">Submit Payment</button>
+        <label for="{{ form.email.auto_id }}">Email:</label> {{ form.email }}
     </form>
 
     <script>

@@ -1,45 +1,34 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.conf import settings
 from recipe.models import Recipe
 
-
-
-from django.contrib.auth.models import (
-    BaseUserManager, AbstractBaseUser, PermissionsMixin
-)
-
-from django.conf import settings
-
-
-class UserManager(BaseUserManager):
-    """Custom user manager for the User model"""
+class CoreUserManager(BaseUserManager):
+    """Custom user manager for the CoreUser model"""
 
     def create_user(self, email, password=None, **extra_fields):
-        """Create, save and return a new user"""
+        """Create, save and return a new CoreUser"""
 
         if not email:
-            raise ValueError(
-                'Please enter an email address'
-            )
+            raise ValueError('Please enter an email address')
         
-        user = self.model(email=self.normalize_email(email))
+        user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
 
         return user
     
-    def create_superuser(self, email, password=None, **extra_field):
-        """Create a superuser using above method and grant priveliges"""
+    def create_superuser(self, email, password=None, **extra_fields):
+        """Create a superuser using above method and grant privileges"""
 
-        user = self.create_user(email=email, password=password)
+        user = self.create_user(email=email, password=password, **extra_fields)
         user.is_staff = True
         user.is_superuser = True
 
         user.save(using=self._db)
         return user
 
-
-class User(AbstractBaseUser, PermissionsMixin):
+class CoreUser(AbstractBaseUser, PermissionsMixin):
     """Model to represent user in the system"""
 
     email = models.EmailField(max_length=255, unique=True)
@@ -48,9 +37,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
+    # You should add custom related_name values to avoid clashes with the User model
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='core_user_groups',
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='core_user_permissions',
+        blank=True
+    )
 
-    objects = UserManager()
+    objects = CoreUserManager()
 
+    def __str__(self):
+        return self.email
 
 class Recipe(models.Model):
     
